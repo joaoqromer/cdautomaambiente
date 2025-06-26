@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instalador de Ambientes</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+    
+    .content {
+      padding: 2rem;
+    }
+    
+    .section {
+      margin-bottom: 2rem;
+    }
+    
+    .section h2 {
+      color: #374151;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+    
+    .env {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border-radius: 20px;
+      margin: 4px;
+      display: inline-block;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+    }
+    
+    .env-container {
+      min-height: 50px;
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 2px dashed #cbd5e1;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-group label {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    input, select {
+      padding: 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    .submit-btn {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      padding: 12px 32px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+      width: 100%;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+    }
+    
+    .submit-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 1rem;
+      color: #6b7280;
+    }
+    
+    .status {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .status.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #10b981;
+    }
+    
+    .status.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #ef4444;
+    }
+    
+    .refresh-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 1rem;
+    }
+    
+    .refresh-btn:hover {
+      background: #059669;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 Instalador de Ambientes</h1>
+      <p>Gerencie e crie novos ambientes de forma automatizada</p>
+    </div>
+    
+    <div class="content">
+      <div class="section">
+        <h2>🌐 Ambientes Existentes 
+          <button class="refresh-btn" onclick="loadEnvs()">🔄 Atualizar</button>
+        </h2>
+        <div class="env-container" id="envs">
+          <div class="loading" style="display: block;">⏳ Carregando ambientes...</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>➕ Criar Novo Ambiente</h2>
+        <form id="deploy">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="vps_ip">🖥️ IP da VPS *</label>
+              <input name="vps_ip" id="vps_ip" placeholder="Ex: 192.168.1.100" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="ssh_user">👤 Usuário SSH</label>
+              <input name="ssh_user" id="ssh_user" value="root" placeholder="root">
+            </div>
+            
+            <div class="form-group">
+              <label for="ssh_password">🔐 Senha SSH *</label>
+              <input name="ssh_password" id="ssh_password" type="password" placeholder="Senha do servidor" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="env">🏷️ Sufixo do Ambiente *</label>
+              <input name="env" id="env" placeholder="Ex: v3, beta, prod" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="domain">🌐 Domínio Principal *</label>
+              <input name="domain" id="domain" placeholder="Ex: meusite.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="email">📧 E-mail LetsEncrypt *</label>
+              <input name="email" id="email" type="email" placeholder="admin@meusite.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="sub_traefik">🚦 Subdomínio Traefik</label>
+              <input name="sub_traefik" id="sub_traefik" placeholder="Ex: traefik">
+            </div>
+            
+            <div class="form-group">
+              <label for="sub_portainer">🐳 Subdomínio Portainer</label>
+              <input name="sub_portainer" id="sub_portainer" placeholder="Ex: portainer">
+            </div>
+            
+            <div class="form-group">
+              <label for="sub_n8n">🤖 Subdomínio n8n</label>
+              <input name="sub_n8n" id="sub_n8n" placeholder="Ex: n8n">
+            </div>
+            
+            <div class="form-group">
+              <label for="sub_evol">💬 Subdomínio Evolution</label>
+              <input name="sub_evol" id="sub_evol" placeholder="Ex: evolution">
+            </div>
+            
+            <div class="form-group">
+              <label for="port_offset">🔢 Offset de Portas</label>
+              <input name="port_offset" id="port_offset" type="number" value="10" placeholder="10">
+            </div>
+            
+            <div class="form-group">
+              <label for="force_traefik">⚙️ Forçar Instalação Traefik</label>
+              <select name="force_traefik" id="force_traefik">
+                <option value="auto">🤖 Automático</option>
+                <option value="y">✅ Sim</option>
+                <option value="n">❌ Não</option>
+              </select>
+            </div>
+          </div>
+          
+          <button type="submit" class="submit-btn" id="submitBtn">
+            🚀 Iniciar Instalação
+          </button>
+          
+          <div class="loading" id="loadingMsg">
+            ⏳ Processando instalação... Isso pode levar alguns minutos.
+          </div>
+          
+          <div class="status" id="statusMsg"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Configuração dos webhooks - ALTERE ESTAS URLs
+const WEBHOOK_LIST = "https://SEU_N8N_DOMAIN/webhook/list_envs";
+const WEBHOOK_DEPLOY = "https://SEU_N8N_DOMAIN/webhook/deploy";
+
+async function loadEnvs() {
+  const envDiv = document.getElementById('envs');
+  const loading = envDiv.querySelector('.loading');
+  
+  try {
+    if (loading) loading.style.display = 'block';
+    
+    const res = await fetch(WEBHOOK_LIST);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const envs = await res.json();
+    
+    if (loading) loading.style.display = 'none';
+    
+    if (Array.isArray(envs) && envs.length > 0) {
+      envDiv.innerHTML = envs.map(e => `<span class="env">🌍 ${e}</span>`).join(' ');
+    } else {
+      envDiv.innerHTML = '<div style="color: #6b7280; font-style: italic;">📭 Nenhum ambiente criado ainda.</div>';
+    }
+  } catch (error) {
+    console.error('Erro ao carregar ambientes:', error);
+    if (loading) loading.style.display = 'none';
+    envDiv.innerHTML = '<div style="color: #ef4444;">❌ Erro ao carregar ambientes. Verifique a conexão.</div>';
+  }
+}
+
+// Carregar ambientes ao inicializar
+loadEnvs();
+
+// Handler do formulário
+document.getElementById('deploy').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const submitBtn = document.getElementById('submitBtn');
+  const loadingMsg = document.getElementById('loadingMsg');
+  const statusMsg = document.getElementById('statusMsg');
+  
+  // Preparar UI para envio
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ Enviando...';
+  loadingMsg.style.display = 'block';
+  statusMsg.style.display = 'none';
+  
+  try {
+    // Coletar dados do formulário
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Validação básica
+    if (!data.vps_ip || !data.ssh_password || !data.env || !data.domain || !data.email) {
+      throw new Error('Por favor, preencha todos os campos obrigatórios (*)');
+    }
+    
+    // Enviar para n8n
+    const response = await fetch(WEBHOOK_DEPLOY, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erro ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    
+    // Sucesso
+    statusMsg.className = 'status success';
+    statusMsg.innerHTML = `
+      <strong>✅ Instalação iniciada com sucesso!</strong><br>
+      O ambiente <strong>${data.env}</strong> está sendo criado.<br>
+      Acompanhe o progresso nos logs do n8n.
+    `;
+    statusMsg.style.display = 'block';
+    
+    // Recarregar lista de ambientes após 5 segundos
+    setTimeout(loadEnvs, 5000);
+    
+    // Limpar formulário
+    e.target.reset();
+    document.getElementById('port_offset').value = '10';
+    
+  } catch (error) {
+    console.error('Erro na instalação:', error);
+    statusMsg.className = 'status error';
+    statusMsg.innerHTML = `
+      <strong>❌ Erro na instalação:</strong><br>
+      ${error.message}
+    `;
+    statusMsg.style.display = 'block';
+  } finally {
+    // Restaurar UI
+    submitBtn.disabled = false;
+    submitBtn.textContent = '🚀 Iniciar Instalação';
+    loadingMsg.style.display = 'none';
+  }
+});
+
+// Auto-preencher subdomínios baseado no sufixo
+document.getElementById('env').addEventListener('input', (e) => {
+  const suffix = e.target.value;
+  if (suffix) {
+    document.getElementById('sub_traefik').value = `traefik${suffix}`;
+    document.getElementById('sub_portainer').value = `portainer${suffix}`;
+    document.getElementById('sub_n8n').value = `n8n${suffix}`;
+    document.getElementById('sub_evol').value = `evol${suffix}`;
+  }
+});
+</script>
+</body>
+</html>

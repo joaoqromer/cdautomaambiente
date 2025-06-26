@@ -1,0 +1,20 @@
+	### nova faze, agora é gerenciador
+
+# caso seja primeira vez que exportou use este comando
+
+apt-get update -y   #atualiza a vps
+apt-get install -y dos2unix   #instala dependencias que falta e a dos2unix
+dos2unix gerenciador.sh   #converte installer.sh com a dos2unix para tirar caracteres e marcação do windos	 
+
+# Tornar executável
+chmod +x gerenciador.sh		#dar permissão
+
+# Menu interativo completo
+./gerenciador.sh		#chamar o instalador
+
+# Ou usar comandos diretos
+./gerenciador.sh --analyze  # Analisar sistema
+./gerenciador.sh --create   # Criar ambiente
+./gerenciador.sh --help     # Ajuda
+
+
